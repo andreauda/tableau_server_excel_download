@@ -41,93 +41,92 @@ view_name_list = ["Report per PVR", "appoggio2022", "Attivi Ytd_New2022", "AM_Ne
 file_temp = "Output"
 filename = 'Report_PVR.xlsx'
 
-directory = "E://Report_PVR_Email//"
-
+directory = os.getcwd()
+#directory = directory.replace("""\\""", """//""")
 
 ### SCRIPT TASK
 
-# Authentication
-auth_token, site_id, user_id = restAPI.sign_in(server, username, password, site_name)
-with open("logs.txt", "a") as o:
-    o.write('Login a Tableau Server')
-    o.writelines('\n')
-    o.close()
+# # Authentication
+# auth_token, site_id, user_id = restAPI.sign_in(server, username, password, site_name)
+# with open("logs.txt", "a") as o:
+#     o.write('Login a Tableau Server')
+#     o.writelines('\n')
+#     o.close()
 
-#per le 4 viste che vogliamo scaricare
-for view_name in view_name_list: 
+# #per le 4 viste che vogliamo scaricare
+# for view_name in view_name_list: 
 
-    # Get the views
-    for i in range(1, 1000):
-        try:
-            view_id = restAPI.get_view_id(server, auth_token, site_id, view_name, 100, i)  
-            print('vista {}'.format(view_id))
-            break
-        except: 
-            continue
+#     # Get the views
+#     for i in range(1, 1000):
+#         try:
+#             view_id = restAPI.get_view_id(server, auth_token, site_id, view_name, 100, i)  
+#             print('vista {}'.format(view_id))
+#             break
+#         except: 
+#             continue
               
-    # Download the view
-    response = restAPI.download_excel_view(server, auth_token, site_id, view_id)
-    print('scarico vista {}'.format(response))
-    with open("logs.txt", "a") as o:
-        o.write('Download vista "{0}" (id: {1})'.format(view_name, view_id))
-        o.writelines('\n')
-        o.close()
+#     # Download the view
+#     response = restAPI.download_excel_view(server, auth_token, site_id, view_id)
+#     print('scarico vista {}'.format(response))
+#     with open("logs.txt", "a") as o:
+#         o.write('Download vista "{0}" (id: {1})'.format(view_name, view_id))
+#         o.writelines('\n')
+#         o.close()
 
-    # Write in the file
-    with open(file_temp + ' - ' + view_name + '.xlsx', "wb") as file:
-        file.write(response.content)
+#     # Write in the file
+#     with open(file_temp + ' - ' + view_name + '.xlsx', "wb") as file:
+#         file.write(response.content)
 
-# Sign out
-restAPI.sign_out(server, auth_token)
-with open("logs.txt", "a") as o:
-        o.write('Sign out')
-        o.writelines('\n')
-        o.close()
+# # Sign out
+# restAPI.sign_out(server, auth_token)
+# with open("logs.txt", "a") as o:
+#         o.write('Sign out')
+#         o.writelines('\n')
+#         o.close()
 
 
-### PARTE 2: Caricare i 4 excel, salvarli in un unico file formato da fogli diversi, cancellare i vecchi file ###
+# ### PARTE 2: Caricare i 4 excel, salvarli in un unico file formato da fogli diversi, cancellare i vecchi file ###
 
-# Create a Pandas Excel writer using XlsxWriter as the engine.
-writer = pd.ExcelWriter(filename, engine='xlsxwriter')
-with open("logs.txt", "a") as o:
-        o.write('Creazione del file giornaliero da inviare')
-        o.writelines('\n')
-        o.close()
+# # Create a Pandas Excel writer using XlsxWriter as the engine.
+# writer = pd.ExcelWriter(filename, engine='xlsxwriter')
+# with open("logs.txt", "a") as o:
+#         o.write('Creazione del file giornaliero da inviare')
+#         o.writelines('\n')
+#         o.close()
 
-#Leggi i 3 Excel che scarichi
-for i in range(len(view_name_list)):
-    #Import 
-    df = pd.read_excel(file_temp + ' - ' + view_name_list[i] + '.xlsx')
-    #non so perché, ma salta il nome delle colonne nella prima view
-    if i == 0:
-        df.columns = df.iloc[0]
-        df.drop([0], inplace=True)
-        #conversione colonne da testo a int
-        field_to_convert_into_int = ['Plafond', 'Fido', 'Day N Conto Gioco', 'Day Imp Conto Gioco', 'Day Imp Conto Gioco', 
-                                    'Day N Ric Cg', 'Day Imp Ric Cg', 'Day N Voucher', 'Day Imp Voucher', 
-                                    'Day N Servizi Snai Pay', 'Day Imp Servizi Snai Pay', 'Week N Conto Gioco', 
-                                    'Week Imp Conto Gioco', 'Week N Ric Cg', 'Week Imp Ric Cg', 'Week N Voucher', 
-                                    'Week Imp Voucher', 'Week N Servizi Snai Pay', 'Week Imp Servizi Snai Pay', 
-                                    'Year N Conto Gioco', 'Year Imp Conto Gioco', 'Year N Ric Cg', 'Year Imp Ric Cg', 
-                                    'Year N Voucher', 'Year Imp Voucher', 'Year N Servizi Snai Pay', 
-                                    'Year Imp Servizi Snai Pay', 'Settimana']
-        for field_to_convert in field_to_convert_into_int:
-            df[field_to_convert] = df[field_to_convert].astype(int)
-    if i == 2 or i == 3:
-        #devo riempire le prime due colonne "nan" con la cella precedente affiché scarichi l'excel con le celle piene (non come le viste in tableau)
-        df.iloc[:, 0].fillna(method='ffill', inplace=True)
-        df.iloc[:, 1].fillna(method='ffill', inplace=True)
-    df.to_excel(writer, sheet_name = view_name_list[i], index = False)
-    with open("logs.txt", "a") as o:
-        o.write('Finalizzazione file giornaliero finale ' + str(i+1) + '/4 ...')
-        o.writelines('\n')
-
-    
-# Close the Pandas Excel writer and output the Excel file.
-writer.save()
-with open("logs.txt", "a") as o:
-        o.write('Salvataggio file')
-        o.writelines('\n')
+# #Leggi i 3 Excel che scarichi
+# for i in range(len(view_name_list)):
+#     #Import 
+#     df = pd.read_excel(file_temp + ' - ' + view_name_list[i] + '.xlsx')
+#     #non so perché, ma salta il nome delle colonne nella prima view
+#     if i == 0:
+#         df.columns = df.iloc[0]
+#         df.drop([0], inplace=True)
+#         #conversione colonne da testo a int
+#         field_to_convert_into_int = ['Plafond', 'Fido', 'Day N Conto Gioco', 'Day Imp Conto Gioco', 'Day Imp Conto Gioco', 
+#                                     'Day N Ric Cg', 'Day Imp Ric Cg', 'Day N Voucher', 'Day Imp Voucher', 
+#                                     'Day N Servizi Snai Pay', 'Day Imp Servizi Snai Pay', 'Week N Conto Gioco', 
+#                                     'Week Imp Conto Gioco', 'Week N Ric Cg', 'Week Imp Ric Cg', 'Week N Voucher', 
+#                                     'Week Imp Voucher', 'Week N Servizi Snai Pay', 'Week Imp Servizi Snai Pay', 
+#                                     'Year N Conto Gioco', 'Year Imp Conto Gioco', 'Year N Ric Cg', 'Year Imp Ric Cg', 
+#                                     'Year N Voucher', 'Year Imp Voucher', 'Year N Servizi Snai Pay', 
+#                                     'Year Imp Servizi Snai Pay', 'Settimana']
+#         for field_to_convert in field_to_convert_into_int:
+#             df[field_to_convert] = df[field_to_convert].astype(int)
+#     if i == 2 or i == 3:
+#         #devo riempire le prime due colonne "nan" con la cella precedente affiché scarichi l'excel con le celle piene (non come le viste in tableau)
+#         df.iloc[:, 0].fillna(method='ffill', inplace=True)
+#         df.iloc[:, 1].fillna(method='ffill', inplace=True)
+#     df.to_excel(writer, sheet_name = view_name_list[i], index = False)
+#     with open("logs.txt", "a") as o:
+#         o.write('Finalizzazione file giornaliero finale ' + str(i+1) + '/4 ...')
+#         o.writelines('\n')
+ 
+# # Close the Pandas Excel writer and output the Excel file.
+# writer._save()
+# with open("logs.txt", "a") as o:
+#         o.write('Salvataggio file')
+#         o.writelines('\n')
 
 
 ### PARTE 3: Invio Mail ###
@@ -135,12 +134,12 @@ with open("logs.txt", "a") as o:
 #from
 me = "tableau-snaitech@snaitech.it"
 #to
-with open(directory + '//mailing_list//list_to.txt') as file:
-#with open(directory + '//mailing_list//list_to_test.txt') as file:
+file_path_to = os.path.join(directory, 'mailing_list', 'list_to.txt')
+with open(file_path_to) as file:
     to = file.read().rstrip()
 #cc
-with open(directory + '//mailing_list//list_cc.txt') as file:
-#with open(directory + '//mailing_list//list_cc_test.txt') as file:
+file_path_cc = os.path.join(directory, 'mailing_list', 'list_cc.txt')
+with open(file_path_cc) as file:
     cc = file.read().rstrip()
 
 msg = MIMEMultipart()
@@ -155,7 +154,8 @@ body = "Ciao, in allegato trovi il Report PVR del {}".format(yesterday)
 #allegato inizio
 msg.attach(MIMEText(body, 'plain'))
 
-attachment = open(directory + filename, "rb")
+attachment_t = os.path.join(directory, filename)
+attachment = open(attachment_t, "rb")
 
 part = MIMEBase('application', 'octet-stream')
 part.set_payload((attachment).read())
