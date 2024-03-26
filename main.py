@@ -31,13 +31,13 @@ with open("logs.txt", "w") as o: # ",w" write, tutti gli altri "a", append
 ###  PARAMETERS
 
 # Tableau Server site
-site_name = '' # none for SNAITECH
+site_name = '' # none for TECH
 
 server = td.server
 username = td.username
 password = td.password
 
-view_name_list = ["Report per PVR", "appoggio2022", "Attivi Ytd_New2022", "AM_New2022 Pivot"]
+view_name_list = ["file1", "file2", "file3", "file4"]
 file_temp = "Output"
 filename = 'Report_PVR.xlsx'
 
@@ -102,14 +102,14 @@ for i in range(len(view_name_list)):
         df.columns = df.iloc[0]
         df.drop([0], inplace=True)
         #conversione colonne da testo a int
-        field_to_convert_into_int = ['Plafond', 'Fido', 'Day N Conto Gioco', 'Day Imp Conto Gioco', 'Day Imp Conto Gioco', 
-                                    'Day N Ric Cg', 'Day Imp Ric Cg', 'Day N Voucher', 'Day Imp Voucher', 
-                                    'Day N Servizi Snai Pay', 'Day Imp Servizi Snai Pay', 'Week N Conto Gioco', 
-                                    'Week Imp Conto Gioco', 'Week N Ric Cg', 'Week Imp Ric Cg', 'Week N Voucher', 
-                                    'Week Imp Voucher', 'Week N Servizi Snai Pay', 'Week Imp Servizi Snai Pay', 
-                                    'Year N Conto Gioco', 'Year Imp Conto Gioco', 'Year N Ric Cg', 'Year Imp Ric Cg', 
-                                    'Year N Voucher', 'Year Imp Voucher', 'Year N Servizi Snai Pay', 
-                                    'Year Imp Servizi Snai Pay', 'Settimana']
+        field_to_convert_into_int = ['CAMPO1', 'CAMPO2', 'Day N  ', 'Day 2  ', 'Day 3  ', 
+                                    'Day N Ric Cg', 'Day  Ric Cg', 'Day N Voucher', 'Day  Voucher', 
+                                    'Day N Servizi  ', 'Day  Servizi  ', 'Week N  ', 
+                                    'Week   ', 'Week N Ric Cg', 'Week  Ric Cg', 'Week N Voucher', 
+                                    'Week  Voucher', 'Week N Servizi  ', 'Week  Servizi  ', 
+                                    'Year N  ', 'Year   ', 'Year N Ric Cg', 'Year  Ric Cg', 
+                                    'Year N Voucher', 'Year  Voucher', 'Year N Servizi  ', 
+                                    'Year  Servizi  ', 'Settimana']
         for field_to_convert in field_to_convert_into_int:
             df[field_to_convert] = df[field_to_convert].astype(int)
     if i == 2 or i == 3:
@@ -131,7 +131,7 @@ with open("logs.txt", "a") as o:
 ### PARTE 3: Invio Mail ###
 
 #from
-me = "tableau-snaitech@snaitech.it"
+me = "tableau-tech@tech.it"
 #to
 file_path_to = os.path.join(directory, 'mailing_list', 'list_to.txt')
 with open(file_path_to) as file:
@@ -157,7 +157,7 @@ attachment_t = os.path.join(directory, filename)
 attachment = open(attachment_t, "rb")
 
 part = MIMEBase('application', 'octet-stream')
-part.set_payload((attachment).read())
+part.set_load((attachment).read())
 encoders.encode_base64(part)
 part.add_header('Content-Disposition', "attachment; filename= %s" % filename)
 
@@ -167,7 +167,7 @@ with open("logs.txt", "a") as o:
         o.writelines('\n')
 #fine allegato
 
-server = smtplib.SMTP('smtprelay.grupposnai.net', 25)
+server = smtplib.SMTP('smtprelay.gruppo.net', 25)
 text = msg.as_string()
 server.sendmail(me, msg["To"].split(",") + msg["Cc"].split(","), msg.as_string())
 #server.sendmail(me, rcpt, msg.as_string())
@@ -175,15 +175,6 @@ server.quit()
 with open("logs.txt", "a") as o:
         o.write('Email inviata')
         o.writelines('\n')
-
-'''
-for i in range(len(view_name_list)):
-    #Rimozione vecchi Excel 
-    os.remove(file_temp + ' - ' + view_name_list[i] + '.xlsx')
-    with open("logs.txt", "a") as o:
-        o.write('Rimozione vecchio file {}/4'.format(i+1))
-        o.writelines('\n')
-'''
 
 #Tutto è andato bene, meno male :)
 with open("logs.txt", "a") as o:
