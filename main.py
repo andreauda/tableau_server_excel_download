@@ -39,7 +39,7 @@ password = td.password
 
 view_name_list = ["file1", "file2", "file3", "file4"]
 file_temp = "Output"
-filename = 'Report_PVR.xlsx'
+filename = 'Report.xlsx'
 
 directory = os.getcwd()
 
@@ -102,14 +102,7 @@ for i in range(len(view_name_list)):
         df.columns = df.iloc[0]
         df.drop([0], inplace=True)
         #conversione colonne da testo a int
-        field_to_convert_into_int = ['CAMPO1', 'CAMPO2', 'Day N  ', 'Day 2  ', 'Day 3  ', 
-                                    'Day N Ric Cg', 'Day  Ric Cg', 'Day N Voucher', 'Day  Voucher', 
-                                    'Day N Servizi  ', 'Day  Servizi  ', 'Week N  ', 
-                                    'Week   ', 'Week N Ric Cg', 'Week  Ric Cg', 'Week N Voucher', 
-                                    'Week  Voucher', 'Week N Servizi  ', 'Week  Servizi  ', 
-                                    'Year N  ', 'Year   ', 'Year N Ric Cg', 'Year  Ric Cg', 
-                                    'Year N Voucher', 'Year  Voucher', 'Year N Servizi  ', 
-                                    'Year  Servizi  ', 'Settimana']
+        field_to_convert_into_int = ['field1', 'field2', ... , 'Year  ', 'Year N Ser  ']
         for field_to_convert in field_to_convert_into_int:
             df[field_to_convert] = df[field_to_convert].astype(int)
     if i == 2 or i == 3:
@@ -146,9 +139,9 @@ msg = MIMEMultipart()
 msg['From'] = me
 msg['To'] = to
 msg['Cc'] = cc
-msg['Subject'] = "Report PVR del {}".format(yesterday)
+msg['Subject'] = "Report del {}".format(yesterday)
 
-body = "Ciao, in allegato trovi il Report PVR del {}".format(yesterday)
+body = "Ciao, in allegato trovi il Report del {}".format(yesterday)
 
 #allegato inizio
 msg.attach(MIMEText(body, 'plain'))
